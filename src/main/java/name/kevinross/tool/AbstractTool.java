@@ -1,6 +1,7 @@
 package name.kevinross.tool;
 
 import android.app.ActivityThread;
+import android.content.Context;
 import android.os.Debug;
 import android.os.Looper;
 import android.os.UserHandle;
@@ -16,6 +17,10 @@ import joptsimple.OptionSet;
 public abstract class AbstractTool {
     private boolean willWaitForDebugger = false;
     private String[] args = new String[]{};
+    private Context thisContext = null;
+    protected Context getContext() {
+        return thisContext;
+    }
     public AbstractTool() {
         Process.setArgV0(this.getClass().getName());
         ReflectionUtil.invokes().on(android.ddm.DdmHandleAppName.class).
@@ -29,6 +34,9 @@ public abstract class AbstractTool {
     }
     public void setArgs(String[] args) {
         this.args = args;
+    }
+    public void setContext(Context ctx) {
+        thisContext = ctx;
     }
     public void start() {
         if (willWaitForDebugger) {

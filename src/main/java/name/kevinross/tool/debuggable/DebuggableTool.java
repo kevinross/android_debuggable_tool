@@ -113,6 +113,7 @@ public class DebuggableTool {
         if (theirargs.size() > 0) {
             tool.setArgs(theirargs.toArray(new String[theirargs.size()]));
         }
+        tool.setContext(ourContext);
         tool.start();
     }
 
