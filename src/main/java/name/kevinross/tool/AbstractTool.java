@@ -49,7 +49,9 @@ public abstract class AbstractTool {
             run(args);
         }
     }
-    protected abstract void run(String[] args);
+    protected void run(String[] args) {
+        throw new RuntimeException("subclass must implement this if no arg parser is to be used");
+    }
     protected void run(OptionSet parser) {
         throw new RuntimeException("subclass must implement this if getArgParser is used");
     }
