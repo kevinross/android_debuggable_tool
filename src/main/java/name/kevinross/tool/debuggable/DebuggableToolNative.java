@@ -1,9 +1,5 @@
 package name.kevinross.tool.debuggable;
 
-import android.ddm.DdmHandleAppName;
-import android.os.Debug;
-
-import name.kevinross.tool.AbstractTool;
 import name.kevinross.tool.ReflectionUtil;
 import name.kevinross.tool.nativehelpers.NativeToolHelpers;
 
@@ -27,8 +23,7 @@ public class DebuggableToolNative {
     public static native void SetJdwpAllowed(boolean allowed);
     public static native void ConfigureJdwp();
     public static void StartDebugger() {
-        Class vmDebug = ReflectionUtil.getClassByName(ClassLoader.getSystemClassLoader(), "dalvik.system.VMDebug");
-        if (ReflectionUtil.invokes().on(vmDebug).name("isDebuggerConnected").swallow().<Boolean>invoke()) {
+        if (IsDebuggerConnected()) {
             System.out.println("debugger already connected");
             return;
         }
@@ -42,5 +37,9 @@ public class DebuggableToolNative {
         SetJdwpAllowed(true);
         ConfigureJdwp();
         StartJdwp();
+    }
+    public static boolean IsDebuggerConnected() {
+        Class vmDebug = ReflectionUtil.getClassByName(ClassLoader.getSystemClassLoader(), "dalvik.system.VMDebug");
+        return ReflectionUtil.invokes().on(vmDebug).name("isDebuggerConnected").swallow().<Boolean>invoke();
     }
 }

@@ -1,6 +1,8 @@
 package name.kevinross.tool;
 
+import android.app.ActivityThread;
 import android.os.Debug;
+import android.os.Looper;
 import android.os.UserHandle;
 import android.os.Process;
 
@@ -12,6 +14,8 @@ public abstract class AbstractTool {
     private boolean willWaitForDebugger = false;
     private String[] args = new String[]{};
     public AbstractTool() {
+        Looper.prepare();
+        ActivityThread.systemMain();
         Process.setArgV0(this.getClass().getName());
         ReflectionUtil.invokes().on(android.ddm.DdmHandleAppName.class).
                 name("setAppName").

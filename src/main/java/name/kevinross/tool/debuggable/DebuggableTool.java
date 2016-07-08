@@ -1,6 +1,10 @@
 package name.kevinross.tool.debuggable;
 
 
+import android.os.Debug;
+import android.os.Process;
+import android.os.UserHandle;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +74,10 @@ public class DebuggableTool {
             if (arg.equals("-D")) {
                 willDebug = true;
             }
+            if (arg.equals("-MD")) {
+                DebuggableToolNative.StartDebugger();
+                DebugMyself();
+            }
         }
 
         Class mainClass = null;
@@ -85,7 +93,7 @@ public class DebuggableTool {
 
         AbstractTool tool = null;
         try {
-            tool = ReflectionUtil.invokes().on(mainClass).getNewInstance();
+            tool = ReflectionUtil.invokes().on(mainClass).of(new Class[]{}).getNewInstance();
         } catch (NoSuchMethodException e) {
             fatal("Tool has no default constructor");
         } catch (IllegalAccessException e) {
@@ -116,5 +124,16 @@ public class DebuggableTool {
     private static void fatal(String reason) {
         System.err.println(reason);
         System.exit(1);
+    }
+
+    private static void DebugMyself() {
+        Process.setArgV0("DebuggableTool");
+        ReflectionUtil.invokes().on(android.ddm.DdmHandleAppName.class).
+                name("setAppName").
+                of(String.class, int.class).
+                using("DebuggableTool", UserHandle.myUserId()).
+                swallow().invoke();
+
+        Debug.waitForDebugger();
     }
 }

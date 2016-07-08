@@ -293,7 +293,7 @@ public final class ReflectionUtil {
         }
 
         protected Constructor getConstructor() throws NoSuchMethodException {
-            if (constructor == null && params != null) {
+            if (constructor == null) {
                 return findConstructor(getClazz(), getClasses());
             }
             return constructor;
@@ -366,6 +366,9 @@ public final class ReflectionUtil {
             NoSuchMethodException ex = null;
             while (thisClass != Object.class) {
                 try {
+                    if (pTypes != null && pTypes.length == 0) {
+                        return thisClass.getDeclaredConstructor();
+                    }
                     return thisClass.getDeclaredConstructor(pTypes);
                 } catch (NoSuchMethodException e) {
                     ex = e;
