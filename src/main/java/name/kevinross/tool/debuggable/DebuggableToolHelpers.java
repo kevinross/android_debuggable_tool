@@ -43,9 +43,6 @@ public class DebuggableToolHelpers {
     public static String getCommandLineForMainClass(String clazz, boolean waitForDebug, String... args) {
         StringBuilder cmdLine = new StringBuilder();
         cmdLine.append("app_process ");
-        if (waitForDebug) {
-            cmdLine.append("-agentlib:jdwp=transport=dt_android_adb,suspend=n,server=y ");
-        }
         cmdLine.append("/ ");
         cmdLine.append("name.kevinross.tool.debuggable.DebuggableTool ");
         if (waitForDebug) {
