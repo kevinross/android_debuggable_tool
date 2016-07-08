@@ -1,0 +1,44 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "24.0.0"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            moduleName "DebuggableToolNative"
+            cFlags "-I" + project.projectDir.toString() + "/art/runtime -std=c++11"
+            ldLibs "art"
+            stl "gnustl_shared"
+            abiFilters "armeabi", "arm64-v8a"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'eu.chainfire:libsuperuser:1.0.0.+'
+}
+// the field we use as a fallback to check if a debugger has already attached is a private field
+// make the field public in the header
+task fixGRegistryVisibility << {
+    String header = new File(project.projectDir.toString() + "/art/runtime/debugger.h").text
+    if (header.indexOf("MADEPUBLIC") > 0) {
+        return
+    }
+    header = header.replace("// The registry mapping objects to JDWP ids.", "// The registry mapping objects to JDWP ids. MADEPUBLIC\npublic:")
+    header = header.replace("static ObjectRegistry* gRegistry;", "static ObjectRegistry* gRegistry;\nprivate:")
+    new File(project.projectDir.toString() + "/art/runtime/debugger.h").text = header
+}
+preBuild.dependsOn fixGRegistryVisibility
