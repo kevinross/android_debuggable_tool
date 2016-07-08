@@ -18,7 +18,7 @@ import name.kevinross.tool.ReflectionUtil;
  *
  * Configuring debugging after running app_process is a massive hack and will more than likely fail.
  * If it does fail, one will have to rerun with the "-agentlib:[params]" parameter. One should also
- * file a bug report.
+ * file a bug report in that case.
  *
  */
 public class DebuggableTool {
@@ -111,7 +111,6 @@ public class DebuggableTool {
                 "# app_process / name.kevinross.tool.debuggable.DebuggableTool [debuggable tool options] -- com.example.cls [arguments]\n" +
                 "\n" +
                 "where the -- is only needed if parameters for DebuggableTool are needed (for example, to wait for the debugger)");
-        DebuggableToolNative.StartJdwp();
         System.exit(0);
     }
     private static void fatal(String reason) {

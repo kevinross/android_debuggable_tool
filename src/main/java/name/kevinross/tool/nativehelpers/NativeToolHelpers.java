@@ -19,18 +19,10 @@ public class NativeToolHelpers {
      */
     public static class VMRuntime {
         public static String getCurrentInstructionSet() {
-            return getCurrentInstructionSet(false);
-        }
-        public static String getCurrentInstructionSet(boolean strip64) {
             // get the internal VMRuntime class
             Class VMRuntimeClass = ReflectionUtil.getClassByName(ClassLoader.getSystemClassLoader(), "dalvik.system.VMRuntime");
             // and the instruction set of the running process
-            String set = ReflectionUtil.invokes().on(VMRuntimeClass).name("getCurrentInstructionSet").nosy().swallow().<String>invoke();
-            if (strip64) set = set.replace("-64", "").replace("64", "");
-            return set;
-        }
-        public static String[] getBothInstructionSets() {
-            return new String[]{getCurrentInstructionSet(true), getCurrentInstructionSet(false)};
+            return ReflectionUtil.invokes().on(VMRuntimeClass).name("getCurrentInstructionSet").nosy().swallow().<String>invoke();
         }
     }
 
@@ -56,12 +48,6 @@ public class NativeToolHelpers {
         List<String> paths = new ArrayList<>();
         String currentPackagePath = getCurrentProcessPackagePath();
         injectNativeLibraryPath(currentPackagePath + "/lib/" + VMRuntime.getCurrentInstructionSet());
-        return;
-        /*
-        for (String arch : VMRuntime.getBothInstructionSets()) {
-            paths.add(currentPackagePath + "/lib/" + arch);
-        }
-        injectNativeLibraryPath(paths.toArray(new String[paths.size()]));*/
     }
 
     /**

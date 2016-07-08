@@ -92,15 +92,6 @@ public class DebuggableToolHelpers {
      * @param args
      * @return
      */
-
-    /**
-     * @see #getScriptForDexAndMainClass(DexFile, Class, boolean, String...)
-     * @param dexFile
-     * @param clazz
-     * @param waitForDebug
-     * @param args
-     * @return
-     */
     public static String getScriptForDexAndMainClass(String dexFile, Class clazz, boolean waitForDebug, String... args) {
         return getScriptForDexAndMainClass(dexFile, clazz.getCanonicalName(), waitForDebug, args);
     }

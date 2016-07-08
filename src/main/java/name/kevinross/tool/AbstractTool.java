@@ -16,7 +16,7 @@ public abstract class AbstractTool {
         ReflectionUtil.invokes().on(android.ddm.DdmHandleAppName.class).
                 name("setAppName").
                 of(String.class, int.class).
-                using(this.getClass().getSimpleName(), UserHandle.myUserId()).
+                using(this.getClass().getName(), UserHandle.myUserId()).
                 swallow().invoke();
     }
     public void setWaitForDebugger(boolean willWait) {
