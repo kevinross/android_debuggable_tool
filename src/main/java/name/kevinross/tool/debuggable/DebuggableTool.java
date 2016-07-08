@@ -1,7 +1,11 @@
 package name.kevinross.tool.debuggable;
 
 
+import android.app.ActivityThread;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Debug;
+import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
 
@@ -12,7 +16,9 @@ import java.util.List;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import name.kevinross.tool.AbstractTool;
+import name.kevinross.tool.R;
 import name.kevinross.tool.ReflectionUtil;
+import name.kevinross.tool.nativehelpers.NativeToolHelpers;
 
 /**
  * DebuggableTool wraps developer code and handles setting up a debugging environment (if desired)
@@ -29,6 +35,7 @@ import name.kevinross.tool.ReflectionUtil;
  *
  */
 public class DebuggableTool {
+    private static Context ourContext = null;
     /**
      * Call the main method for a class, does sanity checks to make sure it can be loaded
      *
@@ -39,6 +46,21 @@ public class DebuggableTool {
      * @param args
      */
     public static void main(String[] args) {
+        // set up runtime
+        Looper.prepare();
+        ActivityThread activityThread = ActivityThread.systemMain();
+        Context mSystemContext = activityThread.getSystemContext();
+        mSystemContext.setTheme(android.R.style.Theme_DeviceDefault_Light_DarkActionBar);
+        try {
+            ourContext = mSystemContext.createPackageContext(NativeToolHelpers.getCurrentProcessPackageName(), Context.CONTEXT_IGNORE_SECURITY);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
+        if (ourContext == null) {
+            System.out.println("context is null");
+            return;
+        }
         if (args.length == 0) {
             usage();
         }
@@ -53,10 +75,10 @@ public class DebuggableTool {
         theirargs.addAll((Collection<? extends String>) other.subList(1, other.size()));
         boolean willDebug = false;
 
-        if (opts.hasArgument("D")) {
+        if (opts.has("D")) {
             willDebug = true;
         }
-        if (opts.hasArgument("F")) {
+        if (opts.has("F")) {
             DebuggableToolNative.StartDebugger();
             DebugMyself();
         }
@@ -65,23 +87,23 @@ public class DebuggableTool {
         try {
             mainClass = Class.forName(classPath);
         } catch (ClassNotFoundException e) {
-            fatal(String.format("Couldn't find the given class name (\"%s\")", classPath));
+            fatal(String.format(ourContext.getString(R.string.error_class_not_found), classPath));
         }
 
         if (!mainClass.getSuperclass().equals(AbstractTool.class)) {
-            fatal("Tool doesn't extend AbstractTool");
+            fatal(R.string.error_bad_implementation);
         }
 
         AbstractTool tool = null;
         try {
             tool = ReflectionUtil.invokes().on(mainClass).of(new Class[]{}).getNewInstance();
         } catch (NoSuchMethodException e) {
-            fatal("Tool has no default constructor");
+            fatal(R.string.error_bad_ctor);
         } catch (IllegalAccessException e) {
-            fatal("Tool's default constructor is private");
+            fatal(R.string.error_ctor_visibility);
         } catch (ReflectiveOperationException e) {
             e.printStackTrace();
-            fatal("Unknown error");
+            fatal(R.string.error_unknown);
         }
 
         if (willDebug) {
@@ -95,15 +117,15 @@ public class DebuggableTool {
     }
 
     private static void usage() {
-        System.out.println("Usage: \n" +
-                "# export CLASSPATH=/path/to/your/apk\n" +
-                "# app_process / name.kevinross.tool.debuggable.DebuggableTool [debuggable tool options] -- com.example.cls [arguments]\n" +
-                "\n" +
-                "where the -- is only needed if parameters for DebuggableTool are needed (for example, to wait for the debugger)");
+        System.out.println(ourContext.getString(R.string.tool_usage));
         System.exit(0);
     }
     private static void fatal(String reason) {
         System.err.println(reason);
+        System.exit(1);
+    }
+    private static void fatal(int reasoncode) {
+        System.err.println(ourContext.getString(reasoncode));
         System.exit(1);
     }
 

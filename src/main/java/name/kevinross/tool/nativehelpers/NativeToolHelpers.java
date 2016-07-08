@@ -42,6 +42,14 @@ public class NativeToolHelpers {
     }
 
     /**
+     * Get the android package name for the current process
+     * @return
+     */
+    public static String getCurrentProcessPackageName() {
+        return new File(getCurrentProcessPackagePath()).getName().replace("-1", "").replace("-2", "");
+    }
+
+    /**
      * Inject the path to native libraries in the current android package into the classloader
      */
     public static void injectNativeLibraryPath() {

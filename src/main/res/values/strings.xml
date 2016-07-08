@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">DebuggableTool</string>
+    <string name="error_class_not_found">Could not find the given class name ("%s")</string>
+    <string name="error_bad_implementation">Tool does not extend AbstractTool</string>
+    <string name="error_bad_ctor">Tool has no default constructor</string>
+    <string name="error_ctor_visibility">Tool default constructor is private</string>
+    <string name="error_unknown">Unknown error</string>
+    <string name="tool_usage">Usage:\n
+    # export CLASSPATH=/path/to/your/apk\n
+    # app_process / name.kevinross.tool.debuggable.DebuggableTool [debuggable tool options] -- com.example.cls [arguments]\n
+    \n
+    where the -- is only needed if parameters for DebuggableTool are needed (for example, to wait for the debugger)</string>\n
 </resources>
