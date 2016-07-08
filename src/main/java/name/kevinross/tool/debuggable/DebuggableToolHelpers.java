@@ -44,7 +44,8 @@ public class DebuggableToolHelpers {
         StringBuilder cmdLine = new StringBuilder();
         cmdLine.append("app_process ");
         cmdLine.append("/ ");
-        cmdLine.append("name.kevinross.tool.debuggable.DebuggableTool ");
+        cmdLine.append(DebuggableTool.class.getName());
+        cmdLine.append(" ");
         if (waitForDebug) {
             cmdLine.append("-D ");
         }
