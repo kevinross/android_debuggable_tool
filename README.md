@@ -20,9 +20,9 @@ There is the unavoidable one-time bootstrap of the tool's convenience script: ru
 
 Once you have the environment (read: CLASSPATH) for your app, running `app_process / name.kevinross.tool.debuggable.DebuggableToolHelpers [args]` will give what you need for running code from your app. There are several options:
 
-1) Use `SH.run`, pass the appropriate CLASSPATH in the environment parameter, and use the output of `DebuggableToolHelpers "cli" "classname" "debug" [args]` as the command.
+1) Use `SH.run`, pass the appropriate CLASSPATH in the environment parameter, and use the output of `DebuggableToolHelpers  -t "cli" -c "classname" -d -- [args]` as the command.
 2) Use `DebuggableToolHelpers#getCommandLineForMainClass` and `DebuggableToolHelpers#runCommand` (given the path to the dex file)
-3) Use `SH.run` and pass `script` instead of `cli` as in (1), pass the path to the dex before the classname, then use the rest of the params in (1), and write the output to some location you can read from and that you can call a script from (excluding any other environment variables and parameters. Make sure that new installs of your app won't affect the CLASSPATH: packagemanager switches the install directories on each install (from `-1` to `-2` cyclically) so the path to the script shouldn't depend on the path in `/data/app`).
+3) Use `SH.run` and pass `script` instead of `cli` as in (1), pass the path to the dex using `-p [path]`, then use the rest of the params in (1), and write the output to some location you can read from and that you can call a script from (excluding any other environment variables and parameters. Make sure that new installs of your app won't affect the CLASSPATH: packagemanager switches the install directories on each install (from `-1` to `-2` cyclically) so the path to the script shouldn't depend on the path in `/data/app`).
 
 ## Debugging
 

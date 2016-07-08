@@ -29,6 +29,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'eu.chainfire:libsuperuser:1.0.0.+'
+    compile "net.sf.jopt-simple:jopt-simple:4.5"
 }
 // the field we use as a fallback to check if a debugger has already attached is a private field
 // make the field public in the header

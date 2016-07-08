@@ -1,18 +1,15 @@
 package name.kevinross.tool.debuggable;
 
 import android.app.ActivityThread;
-import android.app.AppGlobals;
-import android.app.ApplicationThreadNative;
-import android.content.Context;
-import android.os.Debug;
-import android.os.Looper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import dalvik.system.DexFile;
 import eu.chainfire.libsuperuser.Shell;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 /**
  * Helpers useful for developers writing java code interfacing with the android runtime from a root
@@ -159,32 +156,46 @@ public class DebuggableToolHelpers {
      * @param args
      */
     public static void main(String[] args) {
+        OptionParser parser = new OptionParser("t:p:c:d");
+        OptionSet opts = parser.parse(args);
         // <type> [type==script?<dexpath>] <toolclass> <debug> <args...>
         String type = null, dex = null, toolclass = null;
         boolean debug = false;
-        // using "int i" loop so can use $i later for theirargs
-        int i  = 0;
-        for (i = 0; i < args.length; i++) {
-            if (i == 0) {
-                type = args[i];
-            } else if (i == 1 && type.equals("script")) {
-                dex = args[i];
-            } else if ((i == 1 && type.equals("cli")) || (i == 2 && type.equals("script"))) {
-                toolclass = args[i];
-            } else if (type != null && toolclass != null) {
-                debug = Boolean.parseBoolean(args[i]);
-                break;
-            }
+        List<String> theirargs = new ArrayList<>();
+
+        try {
+            type = opts.valueOf("t").toString();
+        } catch (Exception ex) {
+            type = "cli";
         }
-        List<String> arglist = new ArrayList<>();
-        for (int j = i + 1; j < args.length; j++) {
-            arglist.add(args[j]);
+
+        if (opts.has("p")) {
+            dex = opts.valueOf("p").toString();
         }
-        String[] theirargs = arglist.toArray(new String[arglist.size()]);
+
+        try {
+            toolclass = opts.valueOf("c").toString();
+        } catch (Exception ex) {
+            usage();
+        }
+
+        if (opts.has("d")) {
+            debug = true;
+        }
+
+        theirargs.addAll((Collection<? extends String>) opts.nonOptionArguments());
+
         if (type.equals("cli")) {
-            System.out.println(getCommandLineForMainClass(toolclass, debug, theirargs));
-        } else {
-            System.out.println(getScriptForDexAndMainClass(dex, toolclass, debug, theirargs));
+            System.out.println(getCommandLineForMainClass(toolclass, debug, theirargs.toArray(new String[theirargs.size()])));
+        } else if (type.equals("script")) {
+            if (dex == null) {
+                usage();
+            }
+            System.out.println(getScriptForDexAndMainClass(dex, toolclass, debug, theirargs.toArray(new String[theirargs.size()])));
         }
+    }
+    private static void usage() {
+        System.out.println("Usage: DebuggableToolHelpers -t [cli|script] -p [dexpath] -c <toolclass> [-d] <args...");
+        System.exit(1);
     }
 }

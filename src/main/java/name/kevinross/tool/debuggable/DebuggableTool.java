@@ -6,8 +6,11 @@ import android.os.Process;
 import android.os.UserHandle;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import name.kevinross.tool.AbstractTool;
 import name.kevinross.tool.ReflectionUtil;
 
@@ -36,48 +39,26 @@ public class DebuggableTool {
      * @param args
      */
     public static void main(String[] args) {
-        List<String> myargs = new ArrayList<>();
-        List<String> theirargs = new ArrayList<>();
-        String classPath = null;
-        boolean willDebug = false;
         if (args.length == 0) {
             usage();
         }
-
-        int argc = -1;
-        for (int i = 1; i < args.length; i++) {
-            if (args[i].equals("--")) {
-                argc = i;
-            }
+        OptionParser parser = new OptionParser("DF");
+        OptionSet opts = parser.parse(args);
+        List<?> other = opts.nonOptionArguments();
+        if (other.size() == 0) {
+            usage();
         }
+        List<String> theirargs = new ArrayList<>();
+        String classPath = (String)other.get(0);
+        theirargs.addAll((Collection<? extends String>) other.subList(1, other.size()));
+        boolean willDebug = false;
 
-        // 0..argc -> my args. No my args? no-op
-        for (int i = 0; i < argc; i++) {
-            myargs.add(args[i]);
+        if (opts.hasArgument("D")) {
+            willDebug = true;
         }
-
-        // argc starts at -1 so if no myargs, +1 => 0. If myargs, next arg after --
-        classPath = args[argc + 1];
-
-        // no flags passed but given -- anyways
-        if (classPath.equals("--")) {
-            argc += 1;
-            classPath = args[argc + 1];
-        }
-
-        // grab all args after class_path
-        for (int i = argc + 2; i < args.length; i++) {
-            theirargs.add(args[i]);
-        }
-
-        for (String arg : myargs) {
-            if (arg.equals("-D")) {
-                willDebug = true;
-            }
-            if (arg.equals("-MD")) {
-                DebuggableToolNative.StartDebugger();
-                DebugMyself();
-            }
+        if (opts.hasArgument("F")) {
+            DebuggableToolNative.StartDebugger();
+            DebugMyself();
         }
 
         Class mainClass = null;
