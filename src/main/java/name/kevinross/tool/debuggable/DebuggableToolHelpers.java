@@ -1,6 +1,7 @@
 package name.kevinross.tool.debuggable;
 
 import android.app.ActivityThread;
+import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -117,6 +118,29 @@ public class DebuggableToolHelpers {
      */
     public static List<String> runCommand(boolean su, String codePath, String command) {
         return runCommand(su, 0, codePath, command);
+    }
+
+    /**
+     * Run a given command with the classpath from a given context
+     * @param su should it be run with su?
+     * @param ctx context for code path
+     * @param command command string {@see #getCommandLineForMainClass}
+     * @return command output
+     */
+    public static List<String> runCommand(boolean su, Context ctx, String command) {
+        return runCommand(su, 0, ctx.getPackageCodePath(), command);
+    }
+
+    /**
+     * Run a given command with the classpath from a given context
+     * @param su should it be run with su?
+     * @param uid the uid to run under
+     * @param ctx context for code path
+     * @param command command string {@see #getCommandLineForMainClass}
+     * @return command output
+     */
+    public static List<String> runCommand(boolean su, int uid, Context ctx, String command) {
+        return runCommand(su, uid, ctx.getPackageCodePath(), command);
     }
 
     /**
