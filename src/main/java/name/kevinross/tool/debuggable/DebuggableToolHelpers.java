@@ -109,6 +109,9 @@ public class DebuggableToolHelpers {
     public static List<String> runCommand(boolean su, String command) {
         return runCommand(su, ActivityThread.currentActivityThread().getApplication().getPackageCodePath(), command);
     }
+    public static List<String> runCommand(Context ctx, String command) {
+        return runCommand(false, ctx, command);
+    }
     /**
      * Run a given command with the classpath from a given context
      * @param su should it be run with su?
@@ -118,6 +121,17 @@ public class DebuggableToolHelpers {
      */
     public static List<String> runCommand(boolean su, String codePath, String command) {
         return runCommand(su, 0, codePath, command);
+    }
+
+    /**
+     * Run a given command with the classpath from a given context
+     * @param su should it be run with su?
+     * @param uid user ID to run as
+     * @param command command string {@see #getCommandLineForMainClass}
+     * @return command output
+     */
+    public static List<String> runCommand(boolean su, int uid, String command) {
+        return runCommand(su, uid, ActivityThread.currentActivityThread().getApplication().getPackageCodePath(), command);
     }
 
     /**

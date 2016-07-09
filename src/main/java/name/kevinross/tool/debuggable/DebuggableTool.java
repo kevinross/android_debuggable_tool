@@ -105,6 +105,7 @@ public class DebuggableTool {
             e.printStackTrace();
             fatal(R.string.error_unknown);
         }
+        setProcessName(tool);
 
         if (willDebug) {
             tool.setWaitForDebugger(true);
@@ -139,5 +140,14 @@ public class DebuggableTool {
                 swallow().invoke();
 
         Debug.waitForDebugger();
+    }
+
+    private static void setProcessName(Object cls) {
+        Process.setArgV0(cls.getClass().getName());
+        ReflectionUtil.invokes().on(android.ddm.DdmHandleAppName.class).
+                name("setAppName").
+                of(String.class, int.class).
+                using(cls.getClass().getName(), UserHandle.myUserId()).
+                swallow().invoke();
     }
 }
