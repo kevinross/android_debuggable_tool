@@ -1,11 +1,7 @@
 package name.kevinross.tool;
 
-import android.app.ActivityThread;
 import android.content.Context;
 import android.os.Debug;
-import android.os.Looper;
-import android.os.UserHandle;
-import android.os.Process;
 
 import java.util.List;
 
@@ -15,17 +11,19 @@ import name.kevinross.tool.debuggable.DebuggableToolHelpers;
 
 /**
  * Abstract class that facilitates debugging of non-android-app java code. Extend this and
- * implement AbstractTool#run(String[]) as the entry point for tool code. You must not have a
- * default constructor: this particular mechanism means anything done in the default ctor app-side
- * won't have any use on the tool-side as they will be different instances in different processes.
+ * implement AbstractTool#run(String[]) or AbstractTool#run(OptionSet) as the entry point for tool
+ * code. You must not have a default constructor: this particular mechanism means anything done in
+ * the default ctor app-side won't have any use on the tool-side as they will be different instances
+ * in different processes.
  *
- * To run your code, instantiate your class and call any of the run(Su)Tool(*) methods.
+ * To run your code, instantiate your class and call any of the runTool(*) methods.
  *
- *      new YourTool().runSuTool("hello", "world");
+ *      new YourTool().runTool("hello", "world");
+ *      new YourTool().runTool("--flag", "param");
  *
  * To debug your code, a "builder" mechanism is used:
  *
- *      new YourTool().setWaitForDebugger(true).runSuTool("hello", "world");
+ *      new YourTool().setWaitForDebugger(true).runTool("hello", "world");
  *
  */
 public abstract class AbstractTool {
@@ -68,22 +66,24 @@ public abstract class AbstractTool {
     }
 
     /**
-     * Run the tool as root in a separate process with the given arguments
+     * Run the tool in a separate process with the given arguments
+     * @param su run as root
      * @param args
      * @return
      */
-    public List<String> runSuTool(String... args) {
-        return DebuggableToolHelpers.runCommand(true, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
+    public List<String> runTool(boolean su, String... args) {
+        return DebuggableToolHelpers.runCommand(su, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
     }
 
     /**
      * Run the tool as root with the given context and arguments
+     * @param su run as root
      * @param ctx
      * @param args
      * @return
      */
-    public List<String> runSuTool(Context ctx, String... args) {
-        return DebuggableToolHelpers.runCommand(true, ctx, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
+    public List<String> runTool(boolean su, Context ctx, String... args) {
+        return DebuggableToolHelpers.runCommand(su, ctx, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
     }
 
     /**
