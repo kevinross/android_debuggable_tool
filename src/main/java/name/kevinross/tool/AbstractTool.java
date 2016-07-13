@@ -92,7 +92,7 @@ public abstract class AbstractTool {
      * @param args
      * @return
      */
-    public List<String> runSuTool(int uid, String... args) {
+    public List<String> runTool(int uid, String... args) {
         return DebuggableToolHelpers.runCommand(true, uid, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
     }
 
@@ -103,7 +103,7 @@ public abstract class AbstractTool {
      * @param args
      * @return
      */
-    public List<String> runSuTool(int uid, Context ctx, String... args) {
+    public List<String> runTool(int uid, Context ctx, String... args) {
         return DebuggableToolHelpers.runCommand(true, uid, ctx, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
     }
 
@@ -119,6 +119,10 @@ public abstract class AbstractTool {
     public void setArgs(String[] args) {
         this.args = args;
     }
+    protected String[] getArgs() {
+        List<?> args = getArgParser().parse(this.args).nonOptionArguments();
+        return args.toArray(new String[args.size()]);
+    }
     public void setContext(Context ctx) {
         thisContext = ctx;
     }
@@ -127,33 +131,20 @@ public abstract class AbstractTool {
             Debug.waitForDebugger();
         }
         OptionParser parser = getArgParser();
-        if (parser != null) {
-            run(parser.parse(this.args));
-        } else {
-            run(args);
-        }
+        run(parser.parse(this.args));
     }
 
     /**
-     * Implement #run(String[]) or #run(OptionSet) in client code, preference given to the latter
-     * @param args
+     * Implement #run(String[]) or #run(OptionSet) in client code
+     * @param parser
      */
-    protected void run(String[] args) {
-        throw new RuntimeException("subclass must implement this if no arg parser is to be used");
-    }
-    /**
-     * Implement #run(String[]) or #run(OptionSet) in client code, preference given to the latter
-     * @param args
-     */
-    protected void run(OptionSet parser) {
-        throw new RuntimeException("subclass must implement this if getArgParser is used");
-    }
+    protected abstract void run(OptionSet parser);
 
     /**
      * Implementing this will trigger the #run(OptionSet) version of code
      * @return
      */
     protected OptionParser getArgParser() {
-        return null;
+        return new OptionParser();
     }
 }
