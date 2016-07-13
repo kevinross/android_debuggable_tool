@@ -6,6 +6,8 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
+        defaultPublishConfig 'release'
+        publishNonDefault true
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
@@ -22,7 +24,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            android.sourceSets.main.jni.srcDirs = []
+            //android.sourceSets.main.jni.srcDirs = []
         }
     }
 }
@@ -33,6 +35,13 @@ dependencies {
     compile 'eu.chainfire:libsuperuser:1.0.0.+'
     compile "net.sf.jopt-simple:jopt-simple:4.5"
 }
+
+signing {
+    signatories = new name.kevinross.gradle.util.KeybaseSignatoryProvider()
+    sign configurations.archives
+}
+
+
 // the field we use as a fallback to check if a debugger has already attached is a private field
 // make the field public in the header
 task fixGRegistryVisibility << {
@@ -45,9 +54,3 @@ task fixGRegistryVisibility << {
     new File(project.projectDir.toString() + "/art/runtime/debugger.h").text = header
 }
 preBuild.dependsOn fixGRegistryVisibility
-
-signing {
-    signatories = new name.kevinross.gradle.util.KeybaseSignatoryProvider()
-    sign configurations.archives
-}
-

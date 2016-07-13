@@ -15,37 +15,54 @@ import name.kevinross.tool.nativehelpers.NativeToolHelpers;
 public class DebuggableToolNative {
     private static boolean canDebug = false;
     static {
-        NativeToolHelpers.injectNativeLibraryPath();
         loadLibraries();
     }
     private static void loadLibraries() {
         try {
+            NativeToolHelpers.injectNativeLibraryPath();
             System.loadLibrary("gnustl_shared");
             System.loadLibrary("DebuggableToolNative");
             canDebug = true;
         } catch (UnsatisfiedLinkError e) {
-
+            e.printStackTrace();
         }
     }
     public static long getGRegistryState() {
         if (canDebug) {
-            return getGRegistryStateInternal();
+            try {
+                return getGRegistryStateInternal();
+            } catch (UnsatisfiedLinkError e) {
+                e.printStackTrace();
+                return -1;
+            }
         }
         return -1;
     }
     public static void StartJdwp() {
         if (canDebug) {
-            StartJdwpInternal();
+            try {
+                StartJdwpInternal();
+            } catch (UnsatisfiedLinkError e) {
+                e.printStackTrace();
+            }
         }
     }
     public static void SetJdwpAllowed(boolean allowed) {
         if (canDebug) {
-            SetJdwpAllowedInternal(allowed);
+            try {
+                SetJdwpAllowedInternal(allowed);
+            } catch (UnsatisfiedLinkError e) {
+                e.printStackTrace();
+            }
         }
     }
     public static void ConfigureJdwp() {
         if (canDebug) {
-            ConfigureJdwpInternal();
+            try {
+                ConfigureJdwpInternal();
+            } catch (UnsatisfiedLinkError e) {
+                e.printStackTrace();
+            }
         }
     }
     private static native long getGRegistryStateInternal();
@@ -53,6 +70,9 @@ public class DebuggableToolNative {
     private static native void SetJdwpAllowedInternal(boolean allowed);
     private static native void ConfigureJdwpInternal();
     public static void StartDebugger() {
+        if (!canDebug) {
+            return;
+        }
         if (IsDebuggerConnected()) {
             System.out.println("debugger already connected");
             return;
