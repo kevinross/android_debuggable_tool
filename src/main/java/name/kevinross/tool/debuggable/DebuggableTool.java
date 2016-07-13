@@ -119,16 +119,14 @@ public class DebuggableTool {
     }
 
     private static void usage() {
-        System.out.println(ourContext.getString(R.string.tool_usage));
-        System.exit(0);
+        fatal(ourContext.getString(R.string.tool_usage));
     }
     private static void fatal(String reason) {
         System.err.println(reason);
         System.exit(1);
     }
     private static void fatal(int reasoncode) {
-        System.err.println(ourContext.getString(reasoncode));
-        System.exit(1);
+        fatal(ourContext.getString(reasoncode));
     }
 
     private static void DebugMyself() {
