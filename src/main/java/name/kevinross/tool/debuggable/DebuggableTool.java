@@ -105,7 +105,7 @@ public class DebuggableTool {
             e.printStackTrace();
             fatal(R.string.error_unknown);
         }
-        setProcessName(tool);
+        setProcessName(tool.getClass().getName());
 
         if (willDebug) {
             tool.setWaitForDebugger(true);
@@ -132,22 +132,16 @@ public class DebuggableTool {
     }
 
     private static void DebugMyself() {
-        Process.setArgV0("DebuggableTool");
-        ReflectionUtil.invokes().on(android.ddm.DdmHandleAppName.class).
-                name("setAppName").
-                of(String.class, int.class).
-                using("DebuggableTool", UserHandle.myUserId()).
-                swallow().invoke();
-
+        setProcessName("DebuggableTool");
         Debug.waitForDebugger();
     }
 
-    private static void setProcessName(Object cls) {
-        Process.setArgV0(cls.getClass().getName());
+    private static void setProcessName(String cls) {
+        Process.setArgV0(cls);
         ReflectionUtil.invokes().on(android.ddm.DdmHandleAppName.class).
                 name("setAppName").
                 of(String.class, int.class).
-                using(cls.getClass().getName(), UserHandle.myUserId()).
+                using(cls, UserHandle.myUserId()).
                 swallow().invoke();
     }
 }
