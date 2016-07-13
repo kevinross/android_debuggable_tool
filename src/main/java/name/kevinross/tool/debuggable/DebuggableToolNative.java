@@ -13,15 +13,45 @@ import name.kevinross.tool.nativehelpers.NativeToolHelpers;
  * allow for attaching to the process with any compliant JDWP debugger.
  */
 public class DebuggableToolNative {
+    private static boolean canDebug = false;
     static {
         NativeToolHelpers.injectNativeLibraryPath();
-        System.loadLibrary("gnustl_shared");
-        System.loadLibrary("DebuggableToolNative");
+        loadLibraries();
     }
-    public static native long getGRegistryState();
-    public static native void StartJdwp();
-    public static native void SetJdwpAllowed(boolean allowed);
-    public static native void ConfigureJdwp();
+    private static void loadLibraries() {
+        try {
+            System.loadLibrary("gnustl_shared");
+            System.loadLibrary("DebuggableToolNative");
+            canDebug = true;
+        } catch (UnsatisfiedLinkError e) {
+
+        }
+    }
+    public static long getGRegistryState() {
+        if (canDebug) {
+            return getGRegistryStateInternal();
+        }
+        return -1;
+    }
+    public static void StartJdwp() {
+        if (canDebug) {
+            StartJdwpInternal();
+        }
+    }
+    public static void SetJdwpAllowed(boolean allowed) {
+        if (canDebug) {
+            SetJdwpAllowedInternal(allowed);
+        }
+    }
+    public static void ConfigureJdwp() {
+        if (canDebug) {
+            ConfigureJdwpInternal();
+        }
+    }
+    private static native long getGRegistryStateInternal();
+    private static native void StartJdwpInternal();
+    private static native void SetJdwpAllowedInternal(boolean allowed);
+    private static native void ConfigureJdwpInternal();
     public static void StartDebugger() {
         if (IsDebuggerConnected()) {
             System.out.println("debugger already connected");

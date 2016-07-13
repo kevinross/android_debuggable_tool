@@ -4,6 +4,8 @@ This repository provides convenience functions and machinery for invoking java c
 
 The idea is that you can use the standard tools and the standard framework to write and debug code running in a subprocess, a subprocess that more than likely is a root process.
 
+Note that while the java code for all this is included in the release build, the native code won't be. The java code is set up to no-op all debug code if the native library doesn't exist.'
+
 ## Usage
 
 ### Setup

@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'signing'
 
 android {
     compileSdkVersion 23
@@ -21,6 +22,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            android.sourceSets.main.jni.srcDirs = []
         }
     }
 }
@@ -43,3 +45,9 @@ task fixGRegistryVisibility << {
     new File(project.projectDir.toString() + "/art/runtime/debugger.h").text = header
 }
 preBuild.dependsOn fixGRegistryVisibility
+
+signing {
+    signatories = new name.kevinross.gradle.util.KeybaseSignatoryProvider()
+    sign configurations.archives
+}
+
