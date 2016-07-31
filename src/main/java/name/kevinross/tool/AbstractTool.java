@@ -1,5 +1,6 @@
 package name.kevinross.tool;
 
+import android.app.ActivityThread;
 import android.content.Context;
 import android.os.Debug;
 
@@ -29,7 +30,9 @@ import name.kevinross.tool.debuggable.DebuggableToolHelpers;
 public abstract class AbstractTool {
     private boolean willWaitForDebugger = false;
     private String[] args = new String[]{};
+    private ActivityThread thisActivityThread = null;
     private Context thisContext = null;
+    protected OptionSet parsedArgs = null;
 
     /**
      * Get the context obtained via PackageManager inspecting the containing package
@@ -40,10 +43,22 @@ public abstract class AbstractTool {
     }
 
     /**
+     * Get the activity thread for the current process
+     * @return
+     */
+    protected ActivityThread getActivityThread() {
+        return thisActivityThread;
+    }
+
+    /**
      * In client code, instantiate the class and call #runTool(*) or #runSuTool(*) to run code.
      */
     public AbstractTool() {
 
+    }
+
+    private String getCommandLine(String... args) {
+        return DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args);
     }
 
     /**
@@ -52,7 +67,11 @@ public abstract class AbstractTool {
      * @return
      */
     public List<String> runTool(String... args) {
-        return DebuggableToolHelpers.runCommand(false, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
+        return DebuggableToolHelpers.runCommand(false, getCommandLine(args));
+    }
+
+    public Thread runService(String... args) {
+        return DebuggableToolHelpers.runCommandInBackground(false, getCommandLine(args));
     }
 
     /**
@@ -62,7 +81,11 @@ public abstract class AbstractTool {
      * @return
      */
     public List<String> runTool(Context ctx, String... args) {
-        return DebuggableToolHelpers.runCommand(false, ctx, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
+        return DebuggableToolHelpers.runCommand(false, ctx, getCommandLine(args));
+    }
+
+    public Thread runService(Context ctx, String... args) {
+        return DebuggableToolHelpers.runCommandInBackground(false, ctx, getCommandLine(args));
     }
 
     /**
@@ -72,7 +95,11 @@ public abstract class AbstractTool {
      * @return
      */
     public List<String> runTool(boolean su, String... args) {
-        return DebuggableToolHelpers.runCommand(su, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
+        return DebuggableToolHelpers.runCommand(su, getCommandLine(args));
+    }
+
+    public Thread runService(boolean su, String... args) {
+        return DebuggableToolHelpers.runCommandInBackground(su, getCommandLine(args));
     }
 
     /**
@@ -86,6 +113,10 @@ public abstract class AbstractTool {
         return DebuggableToolHelpers.runCommand(su, ctx, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
     }
 
+    public Thread runService(boolean su, Context ctx, String... args) {
+        return DebuggableToolHelpers.runCommandInBackground(su, ctx, getCommandLine(args));
+    }
+
     /**
      * Run the tool as $uid with the given arguments (requires root to obtain $uid)
      * @param uid
@@ -94,6 +125,10 @@ public abstract class AbstractTool {
      */
     public List<String> runTool(int uid, String... args) {
         return DebuggableToolHelpers.runCommand(true, uid, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
+    }
+
+    public Thread runService(int uid, String... args) {
+        return DebuggableToolHelpers.runCommandInBackground(true, uid, getCommandLine(args));
     }
 
     /**
@@ -107,6 +142,10 @@ public abstract class AbstractTool {
         return DebuggableToolHelpers.runCommand(true, uid, ctx, DebuggableToolHelpers.getCommandLineForMainClass(this.getClass(), willWaitForDebugger, args));
     }
 
+    public Thread runService(int uid, Context ctx, String... args) {
+        return DebuggableToolHelpers.runCommandInBackground(true, uid, ctx, getCommandLine(args));
+    }
+
     /**
      * Wait for the debugger to attach before running the tool's #run() method
      * @param willWait
@@ -118,33 +157,40 @@ public abstract class AbstractTool {
     }
     public void setArgs(String[] args) {
         this.args = args;
+        this.parsedArgs = getArgParser().parse(args);
     }
     protected String[] getArgs() {
-        List<?> args = getArgParser().parse(this.args).nonOptionArguments();
-        return args.toArray(new String[args.size()]);
+        return args;
     }
     public void setContext(Context ctx) {
         thisContext = ctx;
     }
+    public void setActivityThread(ActivityThread thread) {thisActivityThread = thread;}
     public void start() {
         if (willWaitForDebugger) {
             Debug.waitForDebugger();
         }
-        OptionParser parser = getArgParser();
-        run(parser.parse(this.args));
+        run(parsedArgs);
     }
-
     /**
-     * Implement #run(String[]) or #run(OptionSet) in client code
+     * Implement this in client code as the main entry point
      * @param parser
      */
     protected abstract void run(OptionSet parser);
 
     /**
-     * Implementing this will trigger the #run(OptionSet) version of code
+     * Implementing this to allow for validating parameters
      * @return
      */
     protected OptionParser getArgParser() {
         return new OptionParser();
+    }
+
+    /**
+     * Implement this to override the process namd
+     * @return
+     */
+    public String getAppName() {
+        return getClass().getName();
     }
 }

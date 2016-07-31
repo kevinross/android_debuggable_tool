@@ -96,7 +96,7 @@ public class DebuggableTool {
 
         AbstractTool tool = null;
         try {
-            tool = ReflectionUtil.invokes().on(mainClass).of(new Class[]{}).getNewInstance();
+            tool = ReflectionUtil.invokes().on(mainClass.asSubclass(AbstractTool.class)).getNewInstance();
         } catch (NoSuchMethodException e) {
             fatal(R.string.error_bad_ctor);
         } catch (IllegalAccessException e) {
@@ -105,16 +105,16 @@ public class DebuggableTool {
             e.printStackTrace();
             fatal(R.string.error_unknown);
         }
-        setProcessName(tool.getClass().getName());
-
+        if (theirargs.size() > 0) {
+            tool.setArgs(theirargs.toArray(new String[theirargs.size()]));
+        }
+        setProcessName(tool.getAppName());
+        tool.setActivityThread(activityThread);
+        tool.setContext(ourContext);
         if (willDebug) {
             tool.setWaitForDebugger(true);
             DebuggableToolNative.StartDebugger();
         }
-        if (theirargs.size() > 0) {
-            tool.setArgs(theirargs.toArray(new String[theirargs.size()]));
-        }
-        tool.setContext(ourContext);
         tool.start();
     }
 

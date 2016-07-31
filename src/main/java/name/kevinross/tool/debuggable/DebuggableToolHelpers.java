@@ -4,6 +4,7 @@ import android.app.ActivityThread;
 import android.content.Context;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -109,9 +110,19 @@ public class DebuggableToolHelpers {
     public static List<String> runCommand(boolean su, String command) {
         return runCommand(su, ActivityThread.currentActivityThread().getApplication().getPackageCodePath(), command);
     }
+
+    public static Thread runCommandInBackground(boolean su, String command) {
+        return runCommandInBackground(su, ActivityThread.currentActivityThread().getApplication().getPackageCodePath(), command);
+    }
+
     public static List<String> runCommand(Context ctx, String command) {
         return runCommand(false, ctx, command);
     }
+
+    public static Thread runCommandInBackground(Context ctx, String command) {
+        return runCommandInBackground(false, ctx, command);
+    }
+
     /**
      * Run a given command with the classpath from a given context
      * @param su should it be run with su?
@@ -121,6 +132,10 @@ public class DebuggableToolHelpers {
      */
     public static List<String> runCommand(boolean su, String codePath, String command) {
         return runCommand(su, 0, codePath, command);
+    }
+
+    public static Thread runCommandInBackground(boolean su, String codePath, String command) {
+        return runCommandInBackground(su, 0, codePath, command);
     }
 
     /**
@@ -134,6 +149,10 @@ public class DebuggableToolHelpers {
         return runCommand(su, uid, ActivityThread.currentActivityThread().getApplication().getPackageCodePath(), command);
     }
 
+    public static Thread runCommandInBackground(boolean su, int uid, String command) {
+        return runCommandInBackground(su, uid, ActivityThread.currentActivityThread().getApplication().getPackageCodePath(), command);
+    }
+
     /**
      * Run a given command with the classpath from a given context
      * @param su should it be run with su?
@@ -143,6 +162,10 @@ public class DebuggableToolHelpers {
      */
     public static List<String> runCommand(boolean su, Context ctx, String command) {
         return runCommand(su, 0, ctx.getPackageCodePath(), command);
+    }
+
+    public static Thread runCommandInBackground(boolean su, Context ctx, String command) {
+        return runCommandInBackground(su, 0, ctx.getPackageCodePath(), command);
     }
 
     /**
@@ -155,6 +178,10 @@ public class DebuggableToolHelpers {
      */
     public static List<String> runCommand(boolean su, int uid, Context ctx, String command) {
         return runCommand(su, uid, ctx.getPackageCodePath(), command);
+    }
+
+    public static Thread runCommandInBackground(boolean su, int uid, Context ctx, String command) {
+        return runCommandInBackground(su, uid, ctx.getPackageCodePath(), command);
     }
 
     /**
@@ -177,6 +204,40 @@ public class DebuggableToolHelpers {
             command = String.format("%d %s", uid, command);
         }
         return Shell.run(shell, new String[]{command}, new String[]{String.format("CLASSPATH=%s", codePath)}, true);
+    }
+
+    /**
+     * Run a given command with the classpath from a given context
+     * @param su should it be run with su?
+     * @param uid the uid to run under
+     * @param codePath path to dex file
+     * @param command command string {@see #getCommandLineForMainClass}
+     * @return command output
+     */
+    public static Thread runCommandInBackground(boolean su, int uid, String codePath, String command) {
+        String shell = "sh";
+        if (su) {
+            if (!Shell.SU.available()) {
+                throw new RuntimeException("su not available!");
+            }
+            shell = "su";
+        }
+        if (uid > 0) {
+            command = String.format("%d %s", uid, command);
+        }
+        // throw it in a thread and return that instead
+        final String finalShell = shell;
+        final String finalCommand = command;
+        final String finalCodePath = codePath;
+        final List<String> lines = new ArrayList<>();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lines.addAll(Shell.run(finalShell, new String[]{finalCommand}, new String[]{String.format("CLASSPATH=%s", finalCodePath)}, true));
+            }
+        });
+        thread.start();
+        return thread;
     }
 
     /**

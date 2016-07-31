@@ -10,6 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Reflection Invoker using Fluent Builder.
@@ -39,9 +41,9 @@ public final class ReflectionUtil {
      * @return the found class
      * @throws ClassNotFoundException
      */
-    public static Class getClassByName(ClassLoader classLoader, String name) {
+    public static <T> Class<T> getClassByName(ClassLoader classLoader, String name) {
         try {
-            return classLoader.loadClass(name);
+            return (Class<T>)classLoader.loadClass(name);
         } catch (ClassNotFoundException ex) {
             throw new RuntimeException("couldn't get class");
         }
@@ -60,6 +62,22 @@ public final class ReflectionUtil {
             }
         }
         return null;
+    }
+
+    /**
+     * Return an array of types corresponding to the array of objects passed in
+     * @param args
+     * @return
+     */
+    public static Class[] paramsToTypes(Object[] args) {
+        if (args == null) {
+            return null;
+        }
+        List<Class> params = new ArrayList<>();
+        for (Object o : args) {
+            params.add(o.getClass());
+        }
+        return params.toArray(new Class[params.size()]);
     }
 
     /**
