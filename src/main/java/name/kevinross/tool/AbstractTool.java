@@ -151,9 +151,9 @@ public abstract class AbstractTool {
      * @param willWait
      * @return
      */
-    public AbstractTool setWaitForDebugger(boolean willWait) {
+    public <I extends AbstractTool> I setWaitForDebugger(boolean willWait) {
         willWaitForDebugger = willWait;
-        return this;
+        return (I)this;
     }
     public void setArgs(String[] args) {
         this.args = args;
